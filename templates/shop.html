@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2>Welcome to your cart</h2>
+    <div class="row">
+        <!-- Iterate over cart items -->
+        {% for cart_item in cart_items %}
+        {% include 'partials/_messages.html' %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ cart_item.meal.image.url }}" class="card-img-top" alt="{{ cart_item.meal.name }}">
+                <div class="card-body">
+                    <!-- Add remove icon -->
+                    <form action="{% url 'remove_from_cart' cart_item.id %}" method="post" id="remove-form">
+                        {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link p-0 m-0">
+                            <img src="{% static 'images/x.png' %}" alt="Remove" class="remove-icon"
+                                style="cursor: pointer; width: 20px; height: 20px;">
+                        </button>
+                    </form>
+                    <h5 class="card-title">{{ cart_item.meal.name }}</h5>
+                    <p class="card-text">Price: Ksh {{ cart_item.meal.price }}</p>
+                    <div class="form-group">
+                        <label for="quantity{{ cart_item.id }}">Quantity:</label>
+                        <input type="number" class="form-control" id="quantity{{ cart_item.id }}"
+                            value="{{ cart_item.quantity }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Delete all and Make order buttons -->
+    <div class="text-center mt-4 mb-5">
+<form action="{% url 'remove_all_from_cart' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete All</button>
+</form>
+<form method="post" id="remove-all-form">
+        <button type="button" class="btn btn-success">Make Order</button>
+    </form>
+    </div>
+</div>
+{% endblock %}

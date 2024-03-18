@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="about_section layout_padding">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1 class="about_taital">About Our Hotel</h1>
+                    <div class="bulit_icon"><img src="{% static '/images/bulit-icon.png' %}"></div>
+                    
+                </div>
+            </div>
+            <div class="about_section_2 layout_padding">
+                <div class="image_iman"><img src="{% static 'images/about-img.png' %}" class="about_img"></div>
+                <div class="hey">
+                        <h1 class="about_taital_1">The Westgate Hotel'</h1>
+                        <p class=" about_text">is the largest hotel in the area, erected in the serene atmosphere of Mumias Town, Kakamega
+                            county. The hotel offers first-class accomodation combined with modern conference facilities and range of bars
+                            and restaurants designed to
+                            make your stay a pleasure.
+                        </p>
+                        <div class="readmore_btn"><a href="#">Read More</a></div>
+                    </div>
+            </div>
+        </div>
+    </div>
+ {% endblock %}

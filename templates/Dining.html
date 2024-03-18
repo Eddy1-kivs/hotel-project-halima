@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+
+<div class="coffee_section layout_padding">
+    <div class="container">
+        <div class="row">
+            <h1 class="coffee_taital">OUR meals</h1>
+            <div class="bulit_icon"><img src="{% static 'images/bulit-icon.png' %}"></div>
+        </div>
+    </div>
+    <div class="coffee_section_2">
+        <div id="main_slider" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <div class="container-fluid">
+                        <div class="row">
+                            {% for meal in meals %}
+                            <div class="col-lg-3 col-md-6 mb-5">
+                                <div class="coffee_img"><img src="{{ meal.image.url }}"></div>
+                                <h3 class="types_text">{{ meal.name }}</h3>
+                                <p class="meal_price">Price: Ksh {{ meal.price }}</p>
+                                <div class="read_bt"><a href="{% url 'view_meal' meal.id %}" class="view-btn">View</a></div>
+                                <form action="{% url 'add_to_cart' meal.id %}" method="post" class="add-to-cart-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary mt-1 add-to-cart-btn">Add to Cart</button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
