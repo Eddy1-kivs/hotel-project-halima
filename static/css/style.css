@@ -154,6 +154,11 @@ img {
     padding-bottom: 0 !important;
 }
 
+.room-thumbnail {
+    width: 100px;
+    height: 100px;
+}
+
 .btn-custom {
     margin-top: 20px;
     background-color: transparent !important;

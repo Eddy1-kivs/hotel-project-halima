@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Main Room Image -->
+            <img id="mainRoomImage" src="{{ room.cover_image.url }}" class="img-fluid" alt="{{ room.name }}"
+                style="height: 300px; width: 100%;">
+        </div>
+        <div class="col-md-6">
+            <!-- Room Details -->
+            <h2>{{ room.name }}</h2>
+            <p>{{ room.description }}</p>
+            <ul>
+                <li><strong>Bed:</strong> {{ room.beds }}</li>
+                <li><strong>Price:</strong> Ksh {{ room.price }}</li>
+                <!-- Add more details as needed -->
+                <li><a href="#" class="btn btn-primary">Book This Room</a></li>
+            </ul>
+        </div>
+    </div>
+    <!-- Additional Room Images -->
+    <div class="row mt-4" id="additionalImages">
+        <div class="col-md-12">
+            <h3>Additional Images</h3>
+        </div>
+        {% if room.cover_image %}
+        <div class="col-md-3">
+            <img src="{{ room.cover_image.url }}" class="img-thumbnail room-thumbnail" alt="Room Image 1"
+                onclick="displayRoomImage('{{ room.cover_image.url }}')" style="height: 150px; width: 100%;">
+        </div>
+        {% endif %}
+        {% if room.image1 %}
+        <div class="col-md-3">
+            <img src="{{ room.image1.url }}" class="img-thumbnail room-thumbnail" alt="Room Image 1"
+                onclick="displayRoomImage('{{ room.image1.url }}')" style="height: 150px; width: 100%;">
+        </div>
+        {% endif %}
+        {% if room.image2 %}
+        <div class="col-md-3">
+            <img src="{{ room.image2.url }}" class="img-thumbnail room-thumbnail" alt="Room Image 2"
+                onclick="displayRoomImage('{{ room.image2.url }}')" style="height: 150px; width: 100%;">
+        </div>
+        {% endif %}
+        {% if room.image3 %}
+        <div class="col-md-3">
+            <img src="{{ room.image3.url }}" class="img-thumbnail room-thumbnail" alt="Room Image 3"
+                onclick="displayRoomImage('{{ room.image3.url }}')" style="height: 150px; width: 100%;">
+        </div>
+        {% endif %}
+        {% if room.image4 %}
+        <div class="col-md-3">
+            <img src="{{ room.image4.url }}" class="img-thumbnail room-thumbnail" alt="Room Image 4"
+                onclick="displayRoomImage('{{ room.image4.url }}')" style="height: 150px; width: 100%;">
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>
+    function displayRoomImage(imageUrl) {
+        document.getElementById('mainRoomImage').src = imageUrl;
+    }
+</script>
+{% endblock %}

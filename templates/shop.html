@@ -23,11 +23,15 @@
                     </form>
                     <h5 class="card-title">{{ cart_item.meal.name }}</h5>
                     <p class="card-text">Price: Ksh {{ cart_item.meal.price }}</p>
-                    <div class="form-group">
-                        <label for="quantity{{ cart_item.id }}">Quantity:</label>
-                        <input type="number" class="form-control" id="quantity{{ cart_item.id }}"
-                            value="{{ cart_item.quantity }}">
-                    </div>
+                    
+                        <input type="hidden" name="item_id" value="{{ cart_item.id }}">
+                        <div class="quantity-controls">
+                            <a href="{% url 'decrement_quantity' cart_item.id %}" class="btn btn-secondary">-</a>
+                                <span class="quantity-value">{{ cart_item.quantity }}</span>
+                            <a href="{% url 'increment_quantity' cart_item.id %}" class="btn btn-secondary">+</a>
+                        </div>
+                    
+                    <p class="subtotal">Subtotal: Ksh {{ cart_item.subtotal }}</p>
                 </div>
             </div>
         </div>
@@ -40,9 +44,10 @@
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">Delete All</button>
 </form>
-<form method="post" id="remove-all-form">
-        <button type="button" class="btn btn-success">Make Order</button>
-    </form>
+<a href="{% url 'create_order' %}" class="btn btn-success">Make Order</a>
+
+
+    <p>Total: Ksh {{ total_amount }}</p>
     </div>
 </div>
 {% endblock %}

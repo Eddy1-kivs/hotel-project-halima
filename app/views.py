@@ -20,7 +20,8 @@ from django.contrib.auth.decorators import login_required
 from .models import Meal
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from .models import Meal, CartItem
+from .models import Meal, CartItem, Rooms, Order
+from django.db.models import Sum
 
 # Create your views here.
  
@@ -186,7 +187,15 @@ def register(request):
     return render(request, 'Auth/register.html')
   
 def accomodation(request):
-    return render(request, 'accomodation.html')
+    rooms = Rooms.objects.all()
+    context = {
+        'rooms': rooms
+    }
+    return render(request, 'accomodation.html', context)
+
+def view_room(request, room_id):
+    room = Rooms.objects.get(id=room_id)
+    return render(request, 'rooms_view.html', {'room': room})
 
 def view_meal(request, meal_id):
     meal = Meal.objects.get(id=meal_id)
@@ -195,7 +204,9 @@ def view_meal(request, meal_id):
 @login_required(login_url='/login')
 def shop(request):
     cart_items = CartItem.objects.filter(user=request.user)
-    return render(request, 'shop.html', {'cart_items': cart_items})
+    total_amount = sum(cart_item.quantity * cart_item.meal.price for cart_item in cart_items)
+    return render(request, 'shop.html', {'cart_items': cart_items, 'total_amount': total_amount})
+
 
 @login_required(login_url='/login')
 def dashboard(request):
@@ -213,7 +224,7 @@ def add_to_cart(request, meal_id):
             messages.success(request, f"{meal.name} added to cart successfully.")
             return redirect('view_meal', meal_id=meal_id)
     return redirect('shop') 
-
+ 
 @login_required(login_url='/login')
 def remove_from_cart(request, cart_item_id):
     cart_item = get_object_or_404(CartItem, id=cart_item_id)
@@ -231,3 +242,63 @@ def remove_all_from_cart(request):
         return redirect('shop')
     return redirect('shop') 
  
+@login_required(login_url='/login')
+def increment_quantity(request, item_id):
+    cart_item = get_object_or_404(CartItem, id=item_id)
+    cart_item.quantity += 1
+    cart_item.save()
+    return redirect('shop')
+
+@login_required(login_url='/login')
+def decrement_quantity(request, item_id):
+    cart_item = get_object_or_404(CartItem, id=item_id)
+    if cart_item.quantity > 1:
+        cart_item.quantity -= 1
+        cart_item.save()
+    else:
+        cart_item.delete()
+    return redirect('shop')
+
+@login_required(login_url='/login')
+def create_order(request):
+    if request.method == 'POST':
+        # Extract order details from the form submission
+        user = request.user
+        meal_id = request.POST.get('meal_id')
+        quantity = request.POST.get('quantity')
+        delivery_location = request.POST.get('delivery_location')
+        payment_mode = request.POST.get('payment_mode')
+
+        # Fetch the meal object if it exists
+        meal = get_object_or_404(Meal, id=meal_id)
+
+        # Validate quantity
+        try:
+            quantity = int(quantity)
+            if quantity <= 0:
+                raise ValueError("Quantity must be a positive integer.")
+        except ValueError:
+            messages.error(request, "Invalid quantity.")
+            return redirect('create_order')
+
+        # Calculate subtotal
+        subtotal = meal.price * quantity
+
+        # Create the order
+        Order.objects.create(
+            user=user,
+            meal=meal,
+            quantity=quantity,
+            subtotal=subtotal,
+            delivery_location=delivery_location,
+            payment_mode=payment_mode
+        )
+
+        # Show success message
+        messages.success(request, 'Your order has been placed successfully!')
+
+        # Redirect to a success page or any other page as needed
+        return redirect('order_success')  # Assuming you have a URL named 'order_success'
+
+    # If the request method is not POST, render the order.html template
+    return render(request, 'order.html')

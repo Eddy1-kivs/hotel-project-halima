@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Checkout</h2>
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="delivery_location" class="form-label">Delivery Location</label>
+            <input type="text" class="form-control" id="delivery_location" name="delivery_location" required>
+            <div class="invalid-feedback">Please provide a delivery location.</div>
+        </div>
+        <div class="mb-3">
+            
+            <select class="form-select" id="payment_mode" name="payment_mode" required>
+                <option value="">Select Payment Mode</option>
+                <option value="Mpesa">Mpesa</option>
+                <option value="Pay on Delivery">Pay on Delivery</option>
+            </select>
+            <div class="invalid-feedback">Please select a payment mode.</div>
+        </div>
+        <div class="mb-3">
+            <label for="total_amount" class="form-label">Total Amount to Pay</label>
+            <input type="text" class="form-control" id="total_amount" name="total_amount" value="{{ total_amount }}"
+                readonly>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Place Order</button>
+    </form>
+</div>
+
+<style>
+    .form-label {
+        font-size: 1.1rem;
+    }
+
+    .form-control {
+        font-size: 1rem;
+    }
+
+    .form-select {
+        font-size: 1rem;
+    }
+</style>
+
+{% endblock %}
