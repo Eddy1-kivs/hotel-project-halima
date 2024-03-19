@@ -20,7 +20,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Meal
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from .models import Meal, CartItem, Rooms, Order
+from .models import Meal, CartItem, Room, Order
 from django.db.models import Sum
 
 # Create your views here.
@@ -187,14 +187,14 @@ def register(request):
     return render(request, 'Auth/register.html')
   
 def accomodation(request):
-    rooms = Rooms.objects.all()
+    rooms = Room.objects.all()
     context = {
         'rooms': rooms
     }
     return render(request, 'accomodation.html', context)
 
 def view_room(request, room_id):
-    room = Rooms.objects.get(id=room_id)
+    room = Room.objects.get(id=room_id)
     return render(request, 'rooms_view.html', {'room': room})
 
 def view_meal(request, meal_id):

@@ -23,7 +23,7 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.meal.name} for {self.user.username}"
     
-class Rooms(models.Model):
+class Room(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
