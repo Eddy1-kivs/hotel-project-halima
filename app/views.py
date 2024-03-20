@@ -25,6 +25,9 @@ from .models import Meal, CartItem, Room, Order, BookedRoom
 from django.db.models import Sum
 from .models import Message
 from .forms import MessageForm
+from django.http import HttpResponse
+from django_daraja.mpesa.core import MpesaClient
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
  
  
@@ -281,84 +284,7 @@ def decrement_quantity(request, item_id):
         cart_item.delete()
     return redirect('shop')
 
-@login_required(login_url='/login')
-def create_order(request):
-    if request.method == 'POST':
-        user = request.user
-        meal_ids = request.POST.getlist('meal_id')  # Retrieve meal IDs as a list
-        
-        delivery_location = request.POST.get('delivery_location')
-        payment_mode = request.POST.get('payment_mode')
-        phone_number = request.POST.get('phone_number')
 
-        for meal_id in meal_ids:
-            meal = get_object_or_404(Meal, id=meal_id)
-
-            try:
-                quantity = 1  # You can modify this to include quantity selection in the form if needed
-                subtotal = meal.price * quantity
-
-                Order.objects.create(
-                    user=user,
-                    meal=meal,
-                    quantity=quantity,
-                    subtotal=subtotal,
-                    delivery_location=delivery_location,
-                    payment_mode=payment_mode,
-                    phone_number=phone_number,
-                    paid=False 
-                )
-
-            except Exception as e:
-                # Handle any exceptions, such as invalid meal IDs or database errors
-                messages.error(request, f"Failed to create order for meal with ID {meal_id}: {e}")
-                return redirect('shop')
-
-        messages.success(request, 'Your order has been placed successfully!')
-        return redirect('shop')
-    
-    else:
-        # Redirect to the shop page if accessed via GET request
-        return redirect('shop')
-
-@login_required(login_url='/login')  
-def order_submit(request):
-    if request.method == 'POST':
-        # Retrieve form data
-        user = request.user
-        meals = request.POST.getlist('meals[]')
-        quantities = request.POST.getlist('quantities[]')
-        subtotals = request.POST.getlist('subtotals[]')
-        delivery_location = request.POST.get('delivery_location')
-        payment_mode = request.POST.get('payment_mode')
-        phone_number = request.POST.get('phone_number')
-
-        # Create orders for each meal
-        for meal, quantity, subtotal in zip(meals, quantities, subtotals):
-            Order.objects.create(
-                user=user,
-                meal=meal,
-                quantity=quantity,
-                subtotal=subtotal,
-                delivery_location=delivery_location,
-                payment_mode=payment_mode,
-                phone_number=phone_number,
-                paid=False 
-            )
-
-        # Send email to the user
-        subject = 'Order Confirmation'
-        message = f'Your order ({meals}) has been placed successfully!'
-        sender_email = 'your_email@example.com'
-        recipient_email = request.user.email 
-        send_mail(subject, message, sender_email, [recipient_email])
-
-        # Redirect to the shop page or another appropriate page
-        return redirect('shop')
-
-    else:
-        # Handle GET requests appropriately, if needed
-        pass
 
 
 @login_required(login_url='/login')  
@@ -384,7 +310,7 @@ def book_room(request, room_id):
             payment_mode=payment_mode,
             phone_number=phone_number,
             price=price,
-            paid=False  
+            paid=True
         )
 
         
@@ -394,9 +320,105 @@ def book_room(request, room_id):
         recipient_email = request.user.email 
         send_mail(subject, message, sender_email, [recipient_email])
 
-
+        pay(request, room_id)
         messages.success(request, 'Room booked successfully!')
 
         
     room = get_object_or_404(Room, id=room_id)
     return render(request, 'book_room.html', {'room': room})
+
+@login_required(login_url='/login')  
+def order_submit(request):
+    if request.method == 'POST':
+        # Retrieve form data
+        user = request.user
+        meals = request.POST.getlist('meals[]')
+        quantities = request.POST.getlist('quantities[]')
+        subtotals = request.POST.getlist('subtotals[]')
+        delivery_location = request.POST.get('delivery_location')
+        payment_mode = request.POST.get('payment_mode')
+        phone_number = request.POST.get('phone_number')
+
+        # Calculate total amount
+        total_amount = sum(float(subtotal) for subtotal in subtotals)
+
+        # Create orders for each meal
+        for meal, quantity, subtotal in zip(meals, quantities, subtotals):
+            Order.objects.create(
+                user=user,
+                meal=meal,
+                quantity=quantity,
+                subtotal=subtotal,
+                delivery_location=delivery_location,
+                payment_mode=payment_mode,
+                phone_number=phone_number,
+                paid=True  # Payment is initially set to False
+            )
+
+        # Send email to the user
+        subject = 'Order Confirmation'
+        message = f'Your order ({meals}) has been placed successfully!'
+        sender_email = 'your_email@example.com'
+        recipient_email = request.user.email 
+        send_mail(subject, message, sender_email, [recipient_email])
+
+        # Initiate payment deduction
+        order_meal(request, total_amount, phone_number)
+
+        # Redirect to an appropriate page
+        return redirect('shop')
+
+    else:
+        # Handle GET requests appropriately, if needed
+        pass
+
+def order_meal(request, total_amount, phone_number):
+    if request.method == 'POST':
+        # Convert total_amount to an integer
+        total_amount_int = int(total_amount)
+        
+        # Define transaction details
+        account_reference = 'order_payment'
+        transaction_desc = 'Order Payment'
+        callback_url = 'https://darajambili.herokuapp.com/express-payment'
+
+        # Initialize the MpesaClient
+        cl = MpesaClient()
+
+        # Initiate STK push payment
+        response = cl.stk_push(phone_number, total_amount_int, account_reference, transaction_desc, callback_url)
+
+        # Handle the response as needed (e.g., logging, error handling)
+        return HttpResponse(response)
+    else:
+        # Handle GET requests appropriately
+        pass
+
+
+def pay(request, room_id):
+    if request.method == 'POST':
+        room = get_object_or_404(Room, id=room_id)
+        phone_number = request.POST.get('phone_number')  # Get phone number from the form
+        amount = room.price  # Get the price of the room
+        account_reference = 'room_booking'  # Reference for the transaction
+        transaction_desc = 'Room Booking Payment'  # Description for the transaction
+        callback_url = 'https://darajambili.herokuapp.com/express-payment'  # Your callback URL
+
+        # Initialize the MpesaClient
+        cl = MpesaClient()
+
+        # Initiate STK push payment
+        response = cl.stk_push(phone_number, amount, account_reference, transaction_desc, callback_url)
+
+        # Handle the response as needed (e.g., logging, error handling)
+        
+        return HttpResponse(response)
+    else:
+        # Handle GET requests appropriately
+        pass
+
+
+def stk_push_callback(request):
+        data = request.body
+        
+        return HttpResponse("STK Push in Django👋")

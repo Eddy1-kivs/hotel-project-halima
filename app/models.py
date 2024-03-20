@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 class Meal(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    price = models.DecimalField(max_digits=8, decimal_places=2)
+    price = models.IntegerField()
     image = models.ImageField(upload_to='meal_images/')
 
     def __str__(self):
@@ -26,7 +26,7 @@ class CartItem(models.Model):
 class Room(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    price = models.DecimalField(max_digits=8, decimal_places=2)
+    price = models.IntegerField()
     beds = models.IntegerField()
     cover_image = models.ImageField(upload_to='meal_images/')
     image1 = models.ImageField(upload_to='meal_images/', blank=True, null=True)
@@ -61,11 +61,8 @@ class BookedRoom(models.Model):
     payment_mode = models.CharField(max_length=50, choices=[('mpesa', 'Mpesa'), ('pay_on_arrival', 'Pay on Arrival')])
     phone_number = models.CharField(max_length=20)
     paid = models.BooleanField(default=False)
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-
-    def save(self, *args, **kwargs):
-        self.price = self.room.price
-        super().save(*args, **kwargs)
+    amount_paid = models.IntegerField()
+ 
 
     def __str__(self):
         return f"Booking for {self.room.name} by {self.user.username}"

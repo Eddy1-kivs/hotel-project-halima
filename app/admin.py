@@ -11,7 +11,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ('user', 'meal', 'quantity', 'delivery_location', 'paid', 'phone_number') 
 
 class BookedRoomAdmin(admin.ModelAdmin):
-    list_display = ('user', 'room', 'date_of_reporting', 'date_of_exit', 'guests', 'payment_mode', 'phone_number', 'paid', 'price')
+    list_display = ('user', 'room', 'date_of_reporting', 'date_of_exit', 'guests', 'payment_mode', 'phone_number', 'paid', 'amount_paid')
 
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone_number', 'message')
