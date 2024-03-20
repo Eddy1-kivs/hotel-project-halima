@@ -52,7 +52,6 @@
 </div>
 
 <!-- Order Modal -->
-<!-- Order Modal -->
 <div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -69,9 +68,9 @@
                     {% csrf_token %}
                     <!-- Loop through cart items and include hidden input fields for meal name, quantity, and subtotal -->
                     {% for cart_item in cart_items %}
-                    <input type="hidden" name="meal" value="{{ cart_item.meal.name }}">
-                    <input type="hidden" name="quantity" value="{{ cart_item.quantity }}">
-                    <input type="hidden" name="subtotal" value="{{ cart_item.subtotal }}">
+                    <input type="hidden" name="meals[]" value="{{ cart_item.meal.name }}">
+                    <input type="hidden" name="quantities[]" value="{{ cart_item.quantity }}">
+                    <input type="hidden" name="subtotals[]" value="{{ cart_item.subtotal }}">
                     {% endfor %}
                     <input type="text" class="mail_text" id="delivery_location" name="delivery_location"
                         placeholder="Delivery location" required>
@@ -89,6 +88,7 @@
         </div>
     </div>
 </div>
+
 
 {% endblock %}
 

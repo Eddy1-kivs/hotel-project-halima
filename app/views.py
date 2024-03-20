@@ -305,28 +305,29 @@ def order_submit(request):
     if request.method == 'POST':
         # Retrieve form data
         user = request.user
-        meal_name = request.POST.get('meal')
-        quantity = request.POST.get('quantity')
+        meals = request.POST.getlist('meals[]')
+        quantities = request.POST.getlist('quantities[]')
+        subtotals = request.POST.getlist('subtotals[]')
         delivery_location = request.POST.get('delivery_location')
         payment_mode = request.POST.get('payment_mode')
         phone_number = request.POST.get('phone_number')
-        subtotal = request.POST.get('subtotal')
 
-        # Create order
-        order = Order.objects.create(
-            user=user,
-            meal=meal_name,
-            quantity=quantity,
-            subtotal=subtotal,
-            delivery_location=delivery_location,
-            payment_mode=payment_mode,
-            phone_number=phone_number,
-            paid=False 
-        )
+        # Create orders for each meal
+        for meal, quantity, subtotal in zip(meals, quantities, subtotals):
+            Order.objects.create(
+                user=user,
+                meal=meal,
+                quantity=quantity,
+                subtotal=subtotal,
+                delivery_location=delivery_location,
+                payment_mode=payment_mode,
+                phone_number=phone_number,
+                paid=False 
+            )
 
         # Send email to the user
         subject = 'Order Confirmation'
-        message = f'Your order ({meal_name}) has been placed successfully!'
+        message = f'Your order ({meals}) has been placed successfully!'
         sender_email = 'your_email@example.com'
         recipient_email = request.user.email 
         send_mail(subject, message, sender_email, [recipient_email])
