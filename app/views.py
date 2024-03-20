@@ -23,7 +23,8 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from .models import Meal, CartItem, Room, Order, BookedRoom
 from django.db.models import Sum
-
+from .models import Message
+from .forms import MessageForm
 # Create your views here.
  
  
@@ -179,7 +180,27 @@ def blog(request):
     return render(request, 'blog.html')
 
 def contact(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        message_content = request.POST.get('message')
+
+        # Create and save Message instance
+        message = Message.objects.create(
+            name=name,
+            email=email,
+            phone_number=phone,
+            message=message_content
+        )
+
+        
+
+        success_message = "We have received your query and will reply via the email you submitted."
+        return render(request, 'contact.html', {'success_message': success_message})
+
     return render(request, 'contact.html')
+
 
 def login(request):
     return render(request, 'Auth/login.html')

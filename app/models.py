@@ -69,3 +69,12 @@ class BookedRoom(models.Model):
 
     def __str__(self):
         return f"Booking for {self.room.name} by {self.user.username}"
+
+class Message(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=20)
+    message = models.TextField()
+
+    def __str__(self):
+        return self.name
