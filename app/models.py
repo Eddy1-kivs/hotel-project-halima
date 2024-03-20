@@ -14,10 +14,10 @@ class CartItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     meal = models.ForeignKey(Meal, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Add the subtotal field
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def save(self, *args, **kwargs):
-        self.subtotal = self.quantity * self.meal.price  # Calculate the subtotal before saving
+        self.subtotal = self.quantity * self.meal.price 
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -40,16 +40,32 @@ class Room(models.Model):
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    meal = models.ForeignKey(Meal, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    meal = models.CharField(max_length=50)
+    quantity = models.CharField(max_length=50, default= '1')
+    subtotal = models.CharField(max_length=50, default= '1')
     delivery_location = models.CharField(max_length=100)
     payment_mode = models.CharField(max_length=50)
+    phone_number = models.CharField(max_length=20 ,default= '254')
+    paid = models.BooleanField(default=False)
+
+    
+    def __str__(self):
+        return self.meal
+
+class BookedRoom(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    date_of_reporting = models.DateField()
+    date_of_exit = models.DateField()
+    guests = models.IntegerField()
+    payment_mode = models.CharField(max_length=50, choices=[('mpesa', 'Mpesa'), ('pay_on_arrival', 'Pay on Arrival')])
+    phone_number = models.CharField(max_length=20)
+    paid = models.BooleanField(default=False)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
 
     def save(self, *args, **kwargs):
-        # Calculate subtotal based on quantity and meal price
-        self.subtotal = self.quantity * self.meal.price
+        self.price = self.room.price
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Order for {self.quantity} x {self.meal.name} by {self.user.username}"
+        return f"Booking for {self.room.name} by {self.user.username}"

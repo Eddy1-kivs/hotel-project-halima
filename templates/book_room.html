@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="text-center mb-4">Fill this form and submit it to make your booking</h2>
+    <form method="post" action="">
+        {% csrf_token %}
+        <div class="col-md-12">
+            <div class="mail_section_1">
+                <label  for="dateOfReporting">Reporting day
+                <input type="date" class="mail_text" id="dateOfReporting" name="date_of_reporting" placeholder="Date of reporting" required >
+                </label>
+                <label for="dateOfExit">Date of exit
+                <input type="date" class="mail_text" id="dateOfExit" name="date_of_exit"
+                        placeholder="Date of exit" required ></label>
+                <input type="number" class="mail_text" id="guests" name="guests"  placeholder="Guests" required>
+                <input type="tel" class="mail_text" id="phoneNumber" placeholder="phone number" name="phone_number" required>
+                <select class="mail_text" id="paymentMode" placeholder="payment mode" name="payment_mode" required>
+                    <option value="mpesa">Mpesa</option>
+                    <option value="pay_on_arrival">Pay on Arrival</option>
+                </select>
+                <div class="send_bt"><button type="submit" class="btn send_bt btn-primary mt-4">Book Room</button></div>
+            </div>
+        </div>
+        
+    </form>
+</div>
+{% endblock %}

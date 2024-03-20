@@ -17,7 +17,12 @@
                 <li><strong>Bed:</strong> {{ room.beds }}</li>
                 <li><strong>Price:</strong> Ksh {{ room.price }}</li>
                 <!-- Add more details as needed -->
-                <li><a href="#" class="btn btn-primary">Book This Room</a></li>
+                <li>
+                    <!-- Button to trigger modal -->
+                    <a href="{% url 'book_room' room.id %}" class="btn btn-primary">
+                        Book This Room
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
@@ -58,6 +63,9 @@
         {% endif %}
     </div>
 </div>
+
+
+
 <script>
     function displayRoomImage(imageUrl) {
         document.getElementById('mainRoomImage').src = imageUrl;

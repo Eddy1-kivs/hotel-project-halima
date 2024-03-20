@@ -5,41 +5,18 @@
     <h2 class="mb-4">Checkout</h2>
     <form method="post" class="needs-validation" novalidate>
         {% csrf_token %}
-        <div class="mb-3">
-            <label for="delivery_location" class="form-label">Delivery Location</label>
-            <input type="text" class="form-control" id="delivery_location" name="delivery_location" required>
-            <div class="invalid-feedback">Please provide a delivery location.</div>
+        
+
+        <input type="text" class="mail_text" id="delivery_location" name="delivery_location"
+            placeholder="Delivery location" required>
+        <input type="tel" class="mail_text" id="phoneNumber" placeholder="Phone number" name="phone_number" required>
+        <select class="mail_text" id="paymentMode" placeholder="Payment mode" name="payment_mode" required>
+            <option value="mpesa">Mpesa</option>
+            <option value="pay_on_arrival">Pay on Arrival</option>
+        </select>
+        <div class="send_bt mt-4">
+            <button type="submit" class="btn send_bt mt-4 btn-primary">Place order</button>
         </div>
-        <div class="mb-3">
-            
-            <select class="form-select" id="payment_mode" name="payment_mode" required>
-                <option value="">Select Payment Mode</option>
-                <option value="Mpesa">Mpesa</option>
-                <option value="Pay on Delivery">Pay on Delivery</option>
-            </select>
-            <div class="invalid-feedback">Please select a payment mode.</div>
-        </div>
-        <div class="mb-3">
-            <label for="total_amount" class="form-label">Total Amount to Pay</label>
-            <input type="text" class="form-control" id="total_amount" name="total_amount" value="{{ total_amount }}"
-                readonly>
-        </div>
-        <button type="submit" class="btn btn-primary btn-lg btn-block">Place Order</button>
     </form>
 </div>
-
-<style>
-    .form-label {
-        font-size: 1.1rem;
-    }
-
-    .form-control {
-        font-size: 1rem;
-    }
-
-    .form-select {
-        font-size: 1rem;
-    }
-</style>
-
 {% endblock %}

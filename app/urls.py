@@ -28,4 +28,6 @@ urlpatterns = [
     path('increment-quantity/<int:item_id>/', views.increment_quantity, name='increment_quantity'),
     path('decrement-quantity/<int:item_id>/', views.decrement_quantity, name='decrement_quantity'),
     path('order/', views.create_order, name='create_order'),
+    path('order_submit/', views.order_submit, name='order_submit'),
+    path('book-room/<int:room_id>/', views.book_room, name='book_room'),
 ]

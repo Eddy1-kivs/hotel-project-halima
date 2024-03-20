@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from validate_email import validate_email
 from django.contrib import messages
+from django.core.mail import send_mail
 from django.core.mail import EmailMessage
 from django.contrib import auth
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
@@ -20,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Meal
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from .models import Meal, CartItem, Room, Order
+from .models import Meal, CartItem, Room, Order, BookedRoom
 from django.db.models import Sum
 
 # Create your views here.
@@ -262,43 +263,118 @@ def decrement_quantity(request, item_id):
 @login_required(login_url='/login')
 def create_order(request):
     if request.method == 'POST':
-        # Extract order details from the form submission
         user = request.user
-        meal_id = request.POST.get('meal_id')
+        meal_ids = request.POST.getlist('meal_id')  # Retrieve meal IDs as a list
+        
+        delivery_location = request.POST.get('delivery_location')
+        payment_mode = request.POST.get('payment_mode')
+        phone_number = request.POST.get('phone_number')
+
+        for meal_id in meal_ids:
+            meal = get_object_or_404(Meal, id=meal_id)
+
+            try:
+                quantity = 1  # You can modify this to include quantity selection in the form if needed
+                subtotal = meal.price * quantity
+
+                Order.objects.create(
+                    user=user,
+                    meal=meal,
+                    quantity=quantity,
+                    subtotal=subtotal,
+                    delivery_location=delivery_location,
+                    payment_mode=payment_mode,
+                    phone_number=phone_number,
+                    paid=False 
+                )
+
+            except Exception as e:
+                # Handle any exceptions, such as invalid meal IDs or database errors
+                messages.error(request, f"Failed to create order for meal with ID {meal_id}: {e}")
+                return redirect('shop')
+
+        messages.success(request, 'Your order has been placed successfully!')
+        return redirect('shop')
+    
+    else:
+        # Redirect to the shop page if accessed via GET request
+        return redirect('shop')
+
+@login_required(login_url='/login')  
+def order_submit(request):
+    if request.method == 'POST':
+        # Retrieve form data
+        user = request.user
+        meal_name = request.POST.get('meal')
         quantity = request.POST.get('quantity')
         delivery_location = request.POST.get('delivery_location')
         payment_mode = request.POST.get('payment_mode')
+        phone_number = request.POST.get('phone_number')
+        subtotal = request.POST.get('subtotal')
 
-        # Fetch the meal object if it exists
-        meal = get_object_or_404(Meal, id=meal_id)
-
-        # Validate quantity
-        try:
-            quantity = int(quantity)
-            if quantity <= 0:
-                raise ValueError("Quantity must be a positive integer.")
-        except ValueError:
-            messages.error(request, "Invalid quantity.")
-            return redirect('create_order')
-
-        # Calculate subtotal
-        subtotal = meal.price * quantity
-
-        # Create the order
-        Order.objects.create(
+        # Create order
+        order = Order.objects.create(
             user=user,
-            meal=meal,
+            meal=meal_name,
             quantity=quantity,
             subtotal=subtotal,
             delivery_location=delivery_location,
-            payment_mode=payment_mode
+            payment_mode=payment_mode,
+            phone_number=phone_number,
+            paid=False 
         )
 
-        # Show success message
-        messages.success(request, 'Your order has been placed successfully!')
+        # Send email to the user
+        subject = 'Order Confirmation'
+        message = f'Your order ({meal_name}) has been placed successfully!'
+        sender_email = 'your_email@example.com'
+        recipient_email = request.user.email 
+        send_mail(subject, message, sender_email, [recipient_email])
 
-        # Redirect to a success page or any other page as needed
-        return redirect('order_success')  # Assuming you have a URL named 'order_success'
+        # Redirect to the shop page or another appropriate page
+        return redirect('shop')
 
-    # If the request method is not POST, render the order.html template
-    return render(request, 'order.html')
+    else:
+        # Handle GET requests appropriately, if needed
+        pass
+
+
+@login_required(login_url='/login')  
+def book_room(request, room_id):
+    if request.method == 'POST':
+        room = get_object_or_404(Room, id=room_id)
+        date_of_reporting = request.POST.get('date_of_reporting')
+        date_of_exit = request.POST.get('date_of_exit')
+        guests = request.POST.get('guests')
+        payment_mode = request.POST.get('payment_mode')
+        phone_number = request.POST.get('phone_number') 
+
+        
+        price = room.price
+
+        
+        booked_room = BookedRoom.objects.create(
+            user=request.user,
+            room=room,
+            date_of_reporting=date_of_reporting,
+            date_of_exit=date_of_exit,
+            guests=guests,
+            payment_mode=payment_mode,
+            phone_number=phone_number,
+            price=price,
+            paid=False  
+        )
+
+        
+        subject = 'Room Booking Confirmation'
+        message = f'Your room ({room.name}) has been booked successfully!'
+        sender_email = 'your_email@example.com'
+        recipient_email = request.user.email 
+        send_mail(subject, message, sender_email, [recipient_email])
+
+
+        messages.success(request, 'Room booked successfully!')
+
+        
+    room = get_object_or_404(Room, id=room_id)
+    return render(request, 'book_room.html', {'room': room})
