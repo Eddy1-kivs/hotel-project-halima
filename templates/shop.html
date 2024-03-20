@@ -52,6 +52,7 @@
 </div>
 
 <!-- Order Modal -->
+<!-- Order Modal -->
 <div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -66,14 +67,16 @@
                 <!-- Include your order form here -->
                 <form method="post" action="{% url 'order_submit' %}" class="needs-validation" novalidate>
                     {% csrf_token %}
-                    <!-- Rest of your form fields -->
-                    <!-- Include hidden input fields to pass meal_id and quantity -->
+                    <!-- Loop through cart items and include hidden input fields for meal name, quantity, and subtotal -->
+                    {% for cart_item in cart_items %}
                     <input type="hidden" name="meal" value="{{ cart_item.meal.name }}">
                     <input type="hidden" name="quantity" value="{{ cart_item.quantity }}">
                     <input type="hidden" name="subtotal" value="{{ cart_item.subtotal }}">
-                    <input type="text" class="mail_text" id="delivery_location" name="delivery_location" placeholder="Delivery location"
+                    {% endfor %}
+                    <input type="text" class="mail_text" id="delivery_location" name="delivery_location"
+                        placeholder="Delivery location" required>
+                    <input type="tel" class="mail_text" id="phoneNumber" placeholder="Phone number" name="phone_number"
                         required>
-                    <input type="tel" class="mail_text" id="phoneNumber" placeholder="Phone number" name="phone_number" required>
                     <select class="mail_text" id="paymentMode" placeholder="Payment mode" name="payment_mode" required>
                         <option value="mpesa">Mpesa</option>
                         <option value="pay_on_arrival">Pay on Arrival</option>
@@ -82,12 +85,11 @@
                         <button type="submit" class="btn send_bt mt-4 btn-primary">Place order</button>
                     </div>
                 </form>
-
-
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 <script>
