@@ -61,7 +61,7 @@ class BookedRoom(models.Model):
     payment_mode = models.CharField(max_length=50, choices=[('mpesa', 'Mpesa'), ('pay_on_arrival', 'Pay on Arrival')])
     phone_number = models.CharField(max_length=20)
     paid = models.BooleanField(default=False)
-    amount_paid = models.IntegerField()
+    price = models.IntegerField()
  
 
     def __str__(self):
