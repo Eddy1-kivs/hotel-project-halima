@@ -388,10 +388,8 @@ def order_meal(request, total_amount, phone_number):
         # Initiate STK push payment
         response = cl.stk_push(phone_number, total_amount_int, account_reference, transaction_desc, callback_url)
 
-        # Handle the response as needed (e.g., logging, error handling)
         return HttpResponse(response)
     else:
-        # Handle GET requests appropriately
         pass
 
 
