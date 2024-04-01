@@ -99,36 +99,44 @@ class Income(models.Model):
     def __str__(self):
         return f"Income - Food: {self.food_income}, Accommodation: {self.accommodation_income}, Total: {self.total}"
 
+class Expense(models.Model):
+    date = models.DateField(default=timezone.now)
+    food_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    housing_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def calculate_total(self):
+        self.total = self.food_expenses + self.housing_expenses
+
+    def save(self, *args, **kwargs):
+        self.calculate_total()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Expenses - Date: {self.date}, Food: {self.food_expenses}, Housing: {self.housing_expenses}, Total: {self.total}"
+
 class ProfitLoss(models.Model):
     date = models.DateField(default=timezone.now)
     profit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     loss = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    @classmethod
-    def calculate_profit_loss(cls):
-        # Get the start and end datetime for the previous day
-        end_date = timezone.now().date()
-        start_date = end_date - timezone.timedelta(days=1)
+    def calculate_profit_loss(self):
+        # Get the total income for the current date
+        total_income = Income.objects.filter(date=self.date).aggregate(total=models.Sum('total'))['total'] or 0
 
-        # Get the total income for the previous day
-        total_income = Income.objects.filter(date__range=(start_date, end_date)).aggregate(total=Sum('total'))['total'] or 0
-
-        # Get the total expenses for the previous day (if any)
-        # You may need to define the Expense model and its relationship with Income
-        total_expenses = 0  # You need to implement this based on your Expense model
+        # Get the total expenses for the current date
+        total_expenses = Expense.objects.filter(date=self.date).aggregate(total=models.Sum('total'))['total'] or 0
 
         # Calculate profit and loss
         total_profit_loss = total_income - total_expenses
-        if total_profit_loss >= 0:
-            cls.profit = total_profit_loss
-            cls.loss = 0
-        else:
-            cls.profit = 0
-            cls.loss = abs(total_profit_loss)
+        self.profit = max(total_profit_loss, 0)
+        self.loss = max(-total_profit_loss, 0)
 
     def save(self, *args, **kwargs):
-        self.calculate_profit_loss()
+        if not self.pk:  # Only calculate if it's a new instance
+            self.calculate_profit_loss()
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"Profit/Loss for {self.date}: Profit - {self.profit}, Loss - {self.loss}"

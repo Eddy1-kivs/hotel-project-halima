@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Meal
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from .models import Meal, CartItem, Room, Order, BookedRoom
+from .models import Meal, CartItem, Room, Order, BookedRoom,ProfitLoss, Expense
 from django.db.models import Sum
 from .models import Message, Income
 from .forms import MessageForm
@@ -297,7 +297,26 @@ def calculate_income():
 
     income_instance.save()
 
+    # Calculate profit and loss
+    calculate_profit_loss()
+
     return income_instance
+
+def calculate_profit_loss():
+    # Get the latest Income instance
+    income_instance = Income.objects.latest('date')
+
+    # Get the latest Expense instance
+    expense_instance = Expense.objects.latest('date')
+
+    # Calculate profit and loss
+    total_profit_loss = income_instance.total - expense_instance.total
+
+    # Update the ProfitLoss model
+    profit_loss_instance, created = ProfitLoss.objects.get_or_create(date=income_instance.date)
+    profit_loss_instance.profit = max(total_profit_loss, 0)
+    profit_loss_instance.loss = max(-total_profit_loss, 0)
+    profit_loss_instance.save()
 
 
 @login_required(login_url='/login')  
