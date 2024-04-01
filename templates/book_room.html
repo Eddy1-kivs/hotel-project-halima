@@ -5,6 +5,7 @@
 <div class="container mt-5 mb-5">
     <h2 class="text-center mb-4">Fill this form and submit it to make your booking</h2>
     <form method="post" action="">
+        {% include 'partials/_messages.html' %}
         {% csrf_token %}
         <div class="col-md-12">
             <div class="mail_section_1">
@@ -14,7 +15,7 @@
                 <label for="dateOfExit">Date of exit
                 <input type="date" class="mail_text" id="dateOfExit" name="date_of_exit"
                         placeholder="Date of exit" required ></label>
-                        
+                         
                 <input type="number" class="mail_text" id="guests" name="guests"  placeholder="Guests" required>
                 <input type="tel" class="mail_text" id="phoneNumber" placeholder="phone number" name="phone_number" required>
                 <select class="mail_text" id="paymentMode" placeholder="payment mode" name="payment_mode" required>

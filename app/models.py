@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Sum
+from django.utils import timezone
 
 class Meal(models.Model):
     name = models.CharField(max_length=100)
@@ -75,3 +77,58 @@ class Message(models.Model):
 
     def __str__(self):
         return self.name
+
+class Income(models.Model):
+    date = models.DateField(default=timezone.now) 
+    food_income = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    accommodation_income = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
+
+    def calculate_income(self):
+        total_food_income = Order.objects.aggregate(total=Sum('subtotal'))['total']
+        total_accommodation_income = BookedRoom.objects.aggregate(total=Sum('price'))['total']
+
+        self.food_income = total_food_income or 0
+        self.accommodation_income = total_accommodation_income or 0
+        self.total = self.food_income + self.accommodation_income
+
+    def save(self, *args, **kwargs):
+        self.calculate_income()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Income - Food: {self.food_income}, Accommodation: {self.accommodation_income}, Total: {self.total}"
+
+class ProfitLoss(models.Model):
+    date = models.DateField(default=timezone.now)
+    profit = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    loss = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    @classmethod
+    def calculate_profit_loss(cls):
+        # Get the start and end datetime for the previous day
+        end_date = timezone.now().date()
+        start_date = end_date - timezone.timedelta(days=1)
+
+        # Get the total income for the previous day
+        total_income = Income.objects.filter(date__range=(start_date, end_date)).aggregate(total=Sum('total'))['total'] or 0
+
+        # Get the total expenses for the previous day (if any)
+        # You may need to define the Expense model and its relationship with Income
+        total_expenses = 0  # You need to implement this based on your Expense model
+
+        # Calculate profit and loss
+        total_profit_loss = total_income - total_expenses
+        if total_profit_loss >= 0:
+            cls.profit = total_profit_loss
+            cls.loss = 0
+        else:
+            cls.profit = 0
+            cls.loss = abs(total_profit_loss)
+
+    def save(self, *args, **kwargs):
+        self.calculate_profit_loss()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Profit/Loss for {self.date}: Profit - {self.profit}, Loss - {self.loss}"

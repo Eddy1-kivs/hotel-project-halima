@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Meal, CartItem, Room, Order, BookedRoom, Message
+from .models import Meal, CartItem, Room, Order, BookedRoom, Message, Income, ProfitLoss
 
 class MealAdmin(admin.ModelAdmin):
     list_display = ('name', 'price', 'description')
@@ -16,10 +16,18 @@ class BookedRoomAdmin(admin.ModelAdmin):
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone_number', 'message')
 
+class IncomeAdmin(admin.ModelAdmin):
+    list_display = ('date','food_income', 'accommodation_income', 'total')
+
+class ProfitLossAdmin(admin.ModelAdmin):
+    list_display = ('date', 'profit', 'loss')
+
 admin.site.register(Meal, MealAdmin)
 admin.site.register(CartItem)
 admin.site.register(Room, RoomAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(BookedRoom, BookedRoomAdmin)
 admin.site.register(Message, MessageAdmin)
+admin.site.register(Income, IncomeAdmin)
+admin.site.register(ProfitLoss, ProfitLossAdmin)
 

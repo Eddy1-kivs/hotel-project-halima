@@ -23,7 +23,7 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from .models import Meal, CartItem, Room, Order, BookedRoom
 from django.db.models import Sum
-from .models import Message
+from .models import Message, Income
 from .forms import MessageForm
 from django.http import HttpResponse
 from django_daraja.mpesa.core import MpesaClient
@@ -198,9 +198,9 @@ def contact(request):
         )
 
         
-
-        success_message = "We have received your query and will reply via the email you submitted."
-        return render(request, 'contact.html', {'success_message': success_message})
+        messages.success(request, 'We have received your query and will reply via the email you submitted.')
+        
+        return render(request, 'contact.html')
 
     return render(request, 'contact.html')
 
@@ -284,7 +284,20 @@ def decrement_quantity(request, item_id):
         cart_item.delete()
     return redirect('shop')
 
+def calculate_income():
+    total_food_income = Order.objects.aggregate(total=Sum('subtotal'))['total']
+    total_accommodation_income = BookedRoom.objects.aggregate(total=Sum('price'))['total']
 
+    income_instance, created = Income.objects.get_or_create(pk=1)  # Assuming there's only one Income instance
+
+    if total_food_income:
+        income_instance.food_income = total_food_income
+    if total_accommodation_income:
+        income_instance.accommodation_income = total_accommodation_income
+
+    income_instance.save()
+
+    return income_instance
 
 
 @login_required(login_url='/login')  
@@ -313,7 +326,7 @@ def book_room(request, room_id):
             paid=True
         )
 
-        
+        calculate_income()
         subject = 'Room Booking Confirmation'
         message = f'Your room ({room.name}) has been booked successfully!'
         sender_email = 'your_email@example.com'
@@ -354,7 +367,7 @@ def order_submit(request):
                 phone_number=phone_number,
                 paid=True  # Payment is initially set to False
             )
-
+        calculate_income()
         # Send email to the user
         subject = 'Order Confirmation'
         message = f'Your order ({meals}) has been placed successfully!'

@@ -17,8 +17,9 @@
                 <div class="col-md-12">
                     
                     <form method="post" action="{% url 'contact' %}">
-                        {% csrf_token %}
                         {% include 'partials/_messages.html' %}
+                        {% csrf_token %}
+                        
                         <div class="mail_section_1">
                             <input type="text" class="mail_text" placeholder="Your Name" name="name">
                             <input type="email" class="mail_text" placeholder="Your Email" name="email">
